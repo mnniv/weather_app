@@ -2,11 +2,57 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:weather_app/core/Theming/Fonts/TextStyleManger.dart';
+import 'package:weather_app/core/weather/weather_enum.dart';
 import 'package:weather_app/core/weather/weather_palette.dart';
 
 class OutlookDay extends StatelessWidget {
   final WeatherPalette palette;
-  const OutlookDay({super.key, required this.palette});
+  final String label;
+  final String conditionText;
+  final WeatherCondition condition;
+  final double minTemp;
+  final double maxTemp;
+  final double weekMinTemp;
+  final double weekMaxTemp;
+
+  const OutlookDay({
+    super.key,
+    required this.palette,
+    required this.label,
+    required this.conditionText,
+    required this.condition,
+    required this.minTemp,
+    required this.maxTemp,
+    required this.weekMinTemp,
+    required this.weekMaxTemp,
+  });
+
+ IconData get _icon {
+  switch (condition) {
+    case WeatherCondition.sunny:
+      return CupertinoIcons.sun_max;
+    case WeatherCondition.sunset:
+      return CupertinoIcons.sunset;
+    case WeatherCondition.cloudy:
+      return CupertinoIcons.cloud;
+    case WeatherCondition.rain:
+      return CupertinoIcons.cloud_rain;
+    case WeatherCondition.thunder:
+      return CupertinoIcons.cloud_bolt_rain;
+    case WeatherCondition.snow:
+      return CupertinoIcons.snow;
+    case WeatherCondition.fog:
+      return CupertinoIcons.cloud_fog;
+    case WeatherCondition.clearNight:
+      return CupertinoIcons.moon_stars;
+  }
+}
+
+  double get _progressValue {
+    final range = weekMaxTemp - weekMinTemp;
+    if (range <= 0) return 1.0;
+    return ((maxTemp - weekMinTemp) / range).clamp(0.0, 1.0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,29 +64,27 @@ class OutlookDay extends StatelessWidget {
           Row(
             children: [
               Icon(
-                CupertinoIcons.sun_max,
+                _icon,
                 size: 30.sp,
-
                 color: palette.foreground,
               ),
               SizedBox(width: 10.w),
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Today',
+                    label,
                     style: TextStyleManger.BlackTitle.copyWith(
                       fontSize: 16.sp,
                       color: palette.foreground,
-
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    'Sunny',
+                    conditionText,
                     style: TextStyleManger.BlackTitle.copyWith(
                       fontSize: 14.sp,
                       color: palette.muted,
-
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -51,27 +95,24 @@ class OutlookDay extends StatelessWidget {
           Row(
             children: [
               Text(
-                '31°',
+                '${minTemp.round()}°',
                 style: TextStyleManger.BlackTitle.copyWith(
                   fontSize: 18.sp,
                   color: palette.muted,
-
                   fontWeight: FontWeight.w400,
                 ),
               ),
               SizedBox(width: 10.w),
-
               SizedBox(
                 width: 100.w,
                 child: LinearProgressIndicator(
-                  value: 0.4,
+                  value: _progressValue,
                   color: palette.foreground,
                 ),
               ),
               SizedBox(width: 10.w),
-
               Text(
-                '42°',
+                '${maxTemp.round()}°',
                 style: TextStyleManger.BlackTitle.copyWith(
                   fontSize: 18.sp,
                   color: palette.foreground,

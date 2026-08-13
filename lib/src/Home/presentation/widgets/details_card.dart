@@ -3,34 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:weather_app/core/Theming/Fonts/TextStyleManger.dart';
 import 'package:weather_app/core/weather/weather_palette.dart';
-import 'package:weather_app/src/Home/widgets/weather_glass.dart';
+import 'package:weather_app/src/Home/presentation/widgets/weather_glass.dart';
 
 class DetailsCard extends StatelessWidget {
   final WeatherPalette palette;
+  final String title;
+  final String value;
+  final IconData icon;
+  final double? progress; // 0.0–1.0, null hides the bar
 
-  const DetailsCard({super.key, required this.palette});
+  const DetailsCard({
+    super.key,
+    required this.palette,
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.progress,
+  });
 
   @override
   Widget build(BuildContext context) {
     return WeatherGlass(
       palette: palette,
-
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 20.w),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  CupertinoIcons.wind,
-                  color: palette.foreground,
-                  size: 26.sp,
-                ),
+                Icon(icon, color: palette.foreground, size: 26.sp),
                 SizedBox(width: 10.w),
                 Text(
-                  'WIND',
+                  title,
                   style: TextStyleManger.BlackTitle.copyWith(
                     fontSize: 16.sp,
                     color: palette.foreground,
@@ -41,21 +46,23 @@ class DetailsCard extends StatelessWidget {
             ),
             SizedBox(height: 15.h),
             Text(
-              '18 km/h',
+              value,
               style: TextStyleManger.BlackTitle.copyWith(
                 color: palette.foreground,
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 15.h),
-            SizedBox(
-              width: 100.w,
-              child: LinearProgressIndicator(
-                value: 0.4,
-                color: palette.foreground,
+            if (progress != null) ...[
+              SizedBox(height: 15.h),
+              SizedBox(
+                width: 100.w,
+                child: LinearProgressIndicator(
+                  value: progress!.clamp(0.0, 1.0),
+                  color: palette.foreground,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

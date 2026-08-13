@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:weather_app/core/Theming/Fonts/TextStyleManger.dart';
 import 'package:weather_app/core/weather/weather_palette.dart';
 import 'package:weather_app/core/weather/weather_enum.dart';
-import 'package:weather_app/src/Home/widgets/weather_glass.dart';
+import 'package:weather_app/src/Home/presentation/widgets/weather_glass.dart';
 
 class TemperatureChart extends StatefulWidget {
   final List<HourPoint> hours;

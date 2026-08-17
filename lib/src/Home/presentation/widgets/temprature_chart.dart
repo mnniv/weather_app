@@ -142,7 +142,6 @@ class _TemperatureChartState extends State<TemperatureChart>
           'TEMPERATURE TODAY',
           style: TextStyleManger.BlackTitle.copyWith(
             fontSize: 14.sp,
-            letterSpacing: 2,
             color: widget.palette.muted,
             fontWeight: FontWeight.w400,
           ),

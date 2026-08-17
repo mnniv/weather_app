@@ -25,16 +25,18 @@ class WeatherBackground extends StatelessWidget {
           colors: palette.stops,
         ),
       ),
-      child: Stack(
-        children: [
-          _Glow(color: palette.glow, alignment: Alignment.topRight),
-
-          _Glow(color: palette.glow2, alignment: Alignment.centerLeft),
-
-          WeatherEffects(condition: condition, palette: palette),
-
-          child,
-        ],
+      child: SafeArea(
+        child: Stack(
+          children: [
+            _Glow(color: palette.glow, alignment: Alignment.topRight),
+        
+            _Glow(color: palette.glow2, alignment: Alignment.centerLeft),
+        
+            WeatherEffects(condition: condition, palette: palette),
+        
+            child,
+          ],
+        ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -12,12 +13,23 @@ class HomePageBloc extends Bloc<HomeEvent, HomeState> {
 
   HomePageBloc({required this.repostris}) : super(HomeState()) {
     on<GetWeatherEvent>(_getWeather);
+    on<SearchCityEvent>(_searchCity, transformer: restartable());
+    on<SelectCityEvent>(_selectCity);
   }
 
   Future<void> _getWeather(
     GetWeatherEvent event,
     Emitter<HomeState> emit,
   ) async {
+    final isRefresh = state.weather != null;
+
+    emit(
+      state.copyWith(
+        status: isRefresh ? state.status : HomeStatus.loading,
+        isRefreshing: isRefresh,
+      ),
+    );
+
     try {
       // ----------------------------------------
       // 1. Check location permission
@@ -50,7 +62,6 @@ class HomePageBloc extends Bloc<HomeEvent, HomeState> {
         ),
       );
 
-
       // ----------------------------------------
       // 3. Reverse-geocode to a location name
       // ----------------------------------------
@@ -71,12 +82,10 @@ class HomePageBloc extends Bloc<HomeEvent, HomeState> {
               : (country.isEmpty ? city : '$city, $country');
         }
       } catch (_) {
-       
         locationName =
             '${position.latitude.toStringAsFixed(2)}, ${position.longitude.toStringAsFixed(2)}';
       }
 
-    
       // ----------------------------------------
       // 4. Request weather
       // ----------------------------------------
@@ -93,30 +102,88 @@ class HomePageBloc extends Bloc<HomeEvent, HomeState> {
       // ----------------------------------------
       result.fold(
         (failure) {
-          if (failure.errMessage == 'No internet connection') {
-            emit(
-              state.copyWith(
-                status: HomeStatus.noInternet,
-                errorMessage: failure.errMessage,
-              ),
-            );
-          } else {
-            emit(
-              state.copyWith(
-                status: HomeStatus.failure,
-                errorMessage: failure.errMessage,
-              ),
-            );
-          }
+          emit(
+            state.copyWith(
+              status: failure.errMessage == 'No internet connection'
+                  ? HomeStatus.noInternet
+                  : HomeStatus.failure,
+              errorMessage: failure.errMessage,
+              isRefreshing: false,
+            ),
+          );
         },
         (data) {
-          emit(state.copyWith(status: HomeStatus.success, weather: data));
+          emit(
+            state.copyWith(
+              status: HomeStatus.success,
+              weather: data,
+              isRefreshing: false,
+            ),
+          );
         },
       );
     } catch (e) {
       emit(
-        state.copyWith(status: HomeStatus.failure, errorMessage: e.toString()),
+        state.copyWith(
+          status: HomeStatus.failure,
+          errorMessage: e.toString(),
+          isRefreshing: false,
+        ),
       );
     }
+  }
+
+  Future<void> _searchCity(
+    SearchCityEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    final query = event.query.trim();
+
+    if (query.isEmpty) {
+      emit(state.copyWith(searchResults: [], isSearching: false));
+      return;
+    }
+
+    emit(state.copyWith(isSearching: true));
+
+    await Future.delayed(const Duration(milliseconds: 450));
+
+    try {
+      final result = await repostris.searchCity(query);
+      result.fold(
+        (failure) =>
+            emit(state.copyWith(searchResults: [], isSearching: false)),
+        (results) => emit(
+          state.copyWith(searchResults: results ?? [], isSearching: false),
+        ),
+      );
+    } catch (e) {
+      emit(state.copyWith(searchResults: [], isSearching: false));
+    }
+  }
+
+  Future<void> _selectCity(
+    SelectCityEvent event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(state.copyWith(status: HomeStatus.loading, searchResults: []));
+
+    final result = await GetWeather(repostris: repostris).call(
+      LocationParams(
+        latitude: event.city.latitude,
+        longitude: event.city.longitude,
+        locationName: '${event.city.name}, ${event.city.country}',
+      ),
+    );
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: HomeStatus.failure,
+          errorMessage: failure.errMessage,
+        ),
+      ),
+      (data) => emit(state.copyWith(status: HomeStatus.success, weather: data)),
+    );
   }
 }

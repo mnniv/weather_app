@@ -47,7 +47,8 @@ class HourlyForecast extends StatelessWidget {
       child: WeatherGlass(
         palette: palette,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 20.h),
+          width: 120.w,
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
           child: Column(
             children: [
               Text(

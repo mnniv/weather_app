@@ -1,5 +1,5 @@
-import 'package:weather_app/core/Netwirking/api%20constant.dart';
 import 'package:weather_app/core/params/location_params.dart';
+import 'package:weather_app/src/Home/data/model/city_search_model.dart';
 import 'package:weather_app/src/Home/data/model/weather_model.dart';
 import '../../../../core/Netwirking/api_consumer.dart';
 import '../../../../core/Netwirking/dio_consumer.dart';
@@ -42,6 +42,26 @@ class HomeRemoteDataSource {
 
     if (response is Map<String, dynamic>) {
       return WeatherModel.fromJson(response, params.locationName);
+    }
+
+    throw ServerException(
+      ErrorModel(errorMessage: 'Failed to load weather', status: 500),
+    );
+  }
+
+  Future<List<CitySearchModel>> searchCity(String query) async {
+    final uri =
+        'https://nominatim.openstreetmap.org/search'
+        '?format=json&q=$query&addressdetails=1&limit=8';
+
+    final response = await api.get(uri, headers: {'User-Agent': 'weather_app'});
+
+    if (response is List) {
+      final list = response
+          .map((e) => CitySearchModel.fromJson(e as Map<String, dynamic>))
+          .where((c) => c.name.isNotEmpty)
+          .toList();
+      return list;
     }
 
     throw ServerException(

@@ -26,7 +26,7 @@ class DetailsCard extends StatelessWidget {
     return WeatherGlass(
       palette: palette,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 20.w),
+        padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

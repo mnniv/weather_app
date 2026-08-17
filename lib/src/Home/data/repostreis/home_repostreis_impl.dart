@@ -4,6 +4,7 @@ import 'package:weather_app/core/Netwirking/checkinternet.dart';
 import 'package:weather_app/core/errors/failure.dart';
 
 import 'package:weather_app/core/params/location_params.dart';
+import 'package:weather_app/src/Home/domin/entity/city_search_entity.dart';
 
 import 'package:weather_app/src/Home/domin/entity/weather_entity.dart';
 
@@ -27,19 +28,29 @@ class HomeRepostreisImpl extends HomeRepostreis {
     if (await NetworkUtil.hasInternet()) {
       try {
         final weather = await homeRemoteDataSource.getWeather(params: params);
-
-        // await homeLocalDataSource.cachedGlbalStatics(globalStatics);
-
         return Right(weather);
       } catch (e) {
-        print("Error fetching Home from API: ${e.toString()}");
-        if (e.toString() == "Exception: Refresh token failed") {
-          return Left(Failure(errMessage: "refresh Token Expired"));
-        }
         return Left(Failure(errMessage: e.toString()));
       }
     } else {
-      return Left(Failure(errMessage: "No internet & no cached data"));
+      return Left(Failure(errMessage: "No internet connection"));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<CitySearchEntity>?>> searchCity(
+    String city,
+  ) async {
+    if (await NetworkUtil.hasInternet()) {
+      try {
+        final list = await homeRemoteDataSource.searchCity(city);
+
+        return Right(list);
+      } catch (e) {
+        return Left(Failure(errMessage: e.toString()));
+      }
+    } else {
+      return Left(Failure(errMessage: "No internet connection"));
     }
   }
 }
